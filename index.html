@@ -388,8 +388,7 @@ body {
 <!-- 🔝 TOP BAR -->
 <div class="topbar">
   <!-- Logo -->
-  <img
-    src="https://i.ibb.co/934JfmT0/image.jpg"
+    <img src="https://drive.google.com/thumbnail?id=1pVLvz0c2tYbX4ZVVPAy1ghL0DHStvf7e&sz=w2000"
     class="logo"
     alt="logo"
   >
@@ -405,13 +404,13 @@ body {
     <h3>Select Cover</h3>
 
  <div class="imgGrid" id="imgGrid">
-      <!-- YAHAN TUM APNI IMAGES ADD KARO -->
-      <img src="https://i.ibb.co/934JfmT0/image.jpg">
-      <img src="https://i.ibb.co/xyBd3TN/image.jpg">
-      <img src="https://i.ibb.co/wFHxcqXx/image.jpg">
-      <img src="https://i.ibb.co/d1rFq38/image.jpg">
-      <img src="https://i.ibb.co/LXYPjkr1/image.jpg">
-      <img src="https://i.ibb.co/DDb63s98/image.jpg">
+
+    <img src="https://drive.google.com/thumbnail?id=1pVLvz0c2tYbX4ZVVPAy1ghL0DHStvf7e&sz=w2000">
+   <img src="https://drive.google.com/thumbnail?id=1fgANA0vPW_vYiZNv06YmN0hZUSGJBUuC&sz=w2000">
+   <img src="https://drive.google.com/thumbnail?id=1PNGmFfDg1u3Eg3Tg51GLv7QCcaTjZSxs&sz=w2000">
+<img src="https://drive.google.com/thumbnail?id=1lQjS-ZksN-5ThwJhGbifEq37EpUPKuq7&sz=w2000">
+   <img src="https://drive.google.com/thumbnail?id=1hngqZ-4TUSG34EnWCUmUK1nY-Cwqh6K7&sz=w2000">
+   <img src="https://drive.google.com/thumbnail?id=1T4ZCztxmXSPoYUluQAAn4rE5minna-DT&sz=w2000">
     </div>
 
     <button class="close" onclick="closeModal()">Close</button>
@@ -546,7 +545,22 @@ if(savedCover){
   cover.innerHTML = "";
 }
 </script>
-<style>/* 🪟 MODAL */
+
+<style>
+/* 🎶 FLOATING COVER ANIMATION */
+@keyframes floatCover {
+  0%   { transform: translateY(0px); }
+  50%  { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+.cover{
+  animation: floatCover 4s ease-in-out infinite;
+  box-shadow:
+    0 0 35px rgba(56,189,248,.6),
+    inset 0 0 30px rgba(0,0,0,.4);
+}
+/* 🪟 MODAL */
 .modal{
   position:fixed;
   inset:0;
