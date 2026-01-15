@@ -3,9 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Modern Music Player</title>
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+<title>Music-89</title>
 
 <style>
+/* MOBILE VIEW */
+@media (max-width: 768px){
+  #desktop-warning{
+    display:none;
+  }
+}
 :root{
   --bg:#020617;
   --card:rgba(255,255,255,0.08);
@@ -25,7 +32,7 @@
   font-family:Poppins,system-ui;
 }
 
-body{
+body {
   margin:0;
   background:
     radial-gradient(circle at top,#0b2a3d,#020617 65%),
@@ -40,11 +47,23 @@ body{
 /* 🔥 PLAYER CARD */
 .player{
   width:360px;
-  background:var(--card);
-  backdrop-filter:var(--blur);
+  position:relative;
   border-radius:26px;
   padding:18px;
-  position:relative;
+
+  /* 🖼 IMAGE BACKGROUND */
+  background:
+    linear-gradient(
+      rgba(2,6,23,.75),
+      rgba(2,6,23,.75)
+    ),
+    url("https://i.ibb.co/zTVdbryZ/de013aa3d799c9797f188f408bdf8268.jpg");
+
+  background-size:cover;
+  background-position:center;
+
+  backdrop-filter:blur(26px);
+
   box-shadow:
     0 0 0 1px rgba(255,255,255,.08),
     0 30px 70px rgba(0,0,0,.7),
@@ -172,10 +191,212 @@ body{
   box-shadow:0 0 14px rgba(56,189,248,.35);
 }
 </style>
+<style>
+  body {
+    background-image: url("https://example.com/your-image.jpg");
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+</style>
 </head>
+<style>
+    /* 🔝 TOP BAR */
+.topbar{
+  position:absolute;
+  top:14px;
+  left:14px;
+  right:14px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  z-index:5;
+}
 
+/* 🟦 LOGO */
+.logo{
+  width:38px;
+  height:38px;
+  border-radius:50%;
+  object-fit:cover;
+  box-shadow:0 0 14px rgba(56,189,248,.6);
+}
+
+/* ⚙ SETTINGS ICON */
+.settings{
+  font-size:20px;
+  cursor:pointer;
+  color:var(--text);
+  padding:0;
+  background:none;
+  border-radius:0;
+}
+
+.settings:hover{
+  color:var(--accent);
+}
+/* BACKGROUND MODAL */
+#bgModal {
+  position: fixed;
+  inset: 0;
+  display: none;           /* hidden by default */
+  justify-content: center;
+  align-items: center;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(6px);
+  z-index: 9999;           /* player ke upar aayega */
+}
+
+#bgModal .modalBox {
+  width: 320px;
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(25px);
+  border-radius: 22px;
+  padding: 16px;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.1),
+    0 0 40px rgba(56,189,248,.35);
+}
+
+#bgModal h3{
+  text-align:center;
+  margin-bottom:12px;
+}
+
+#bgModal .imgGrid{
+  display:grid;
+  grid-template-columns: repeat(3,1fr);
+  gap:10px;
+}
+
+#bgModal .imgGrid img{
+  width:100%;
+  height:80px;
+  object-fit:cover;
+  border-radius:12px;
+  cursor:pointer;
+  box-shadow:0 0 10px rgba(0,0,0,.4);
+}
+
+#bgModal .imgGrid img:hover{
+  outline:2px solid #38bdf8;
+}
+
+#bgModal .close{
+  margin-top:10px;
+  width:100%;
+  padding:10px;
+  border:none;
+  border-radius:14px;
+  font-weight:600;
+  cursor:pointer;
+  background: rgba(255,255,255,.1);
+  color:#fff;
+}
+/* 🌟 UNIFIED TOP HEADER */
+.top-header {
+  position: fixed;
+  top: 20px;                     /* gap from top of screen */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 400px;
+  padding: 12px 16px;
+  border-radius: 24px;
+  background: rgba(2,6,23,0.6); /* glass effect */
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+  z-index: 1000;
+}
+
+/* Logo */
+.top-header .logo {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 0 10px rgba(56,189,248,0.5);
+}
+
+/* Header Text */
+.top-header .header-text {
+  flex: 1;
+  text-align: center;
+  font-size: 26px;
+  font-family: 'Dancing Script', cursive;
+  font-weight: 700;
+  color: #ffffff;
+  text-shadow:
+    0 0 6px rgba(255,255,255,0.7),
+    0 0 12px rgba(56,189,248,0.4);
+}
+
+/* Settings Icon */
+.top-header .settings {
+  font-size: 22px;
+  color: var(--text);
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.top-header .settings:hover {
+  color: var(--accent);
+  transform: scale(1.1);
+}
+.player {
+  margin-top: 70px; /* enough space for header */
+}
+
+/* TOP CENTER TEXT */
+.top-text{
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 28px;                /* slightly bigger for style */
+  font-weight: 700;               /* bold-ish */
+  font-family: 'Dancing Script', cursive;  /* sexy cursive font */
+  color: #ffffff;                 /* white color */
+  text-shadow:
+    0 0 6px rgba(255,255,255,0.7),
+    0 0 12px rgba(56,189,248,0.4); /* subtle glow */
+  z-index: 5;
+}
+</style>
+    <div class="top-text"> Music 89 </div>
 <body>
+    <div class="top-text"> Music 89 </div>
+    
+    <!-- 🎨 BACKGROUND SELECT MODAL -->
+<div class="modal" id="bgModal">
+  <div class="modalBox">
+    <h3>Select Background</h3>
 
+    <div class="imgGrid" id="bgGrid">
+      <img src="https://i.ibb.co/zTVdbryZ/de013aa3d799c9797f188f408bdf8268.jpg">
+      <img src="https://i.ibb.co/8gx8BS4X/1d20a039aba4dc4c82771ea3c66e2d54.jpg">
+      <img src="https://i.ibb.co/DPScgsrF/f1b77c0de51121eec732ef83a3ec7c37.jpg">
+      <img src="https://i.ibb.co/0yHnf74b/2bf895a0de170f2ff258b42d6899f618.jpg">
+    </div>
+
+    <button class="close" onclick="closeBgModal()">Close</button>
+  </div>
+</div>
+<!-- 🔝 TOP BAR -->
+<div class="topbar">
+  <!-- Logo -->
+  <img
+    src="https://i.ibb.co/x8gycKjb/20260113-180210.jpg"
+    class="logo"
+    alt="logo"
+  >
+
+  <!-- Settings -->
+<span class="settings" onclick="openBgModal()">⚙</span>
+</div>
 <div class="player">
 <div class="cover" id="cover">🎵</div>
 <!-- IMAGE SELECT MODAL -->
@@ -211,13 +432,48 @@ body{
     <button onclick="next()">⏭</button>
   </div>
 <div class="add" onclick="toggle()">▶ Play</div>
-  <div class="add" onclick="file.click()">➕ Add Music</div>
+  <div class="add" onclick="file.click()">✚ Add Music</div>
 
   <div class="list" id="list"></div>
 
   <input type="file" id="file" hidden accept="audio/*">
   <audio id="audio"></audio>
 </div>
+<script>
+const bgModal = document.getElementById("bgModal");
+const bgGrid = document.getElementById("bgGrid");
+
+/* open modal */
+function openBgModal(){
+  bgModal.style.display = "flex";
+}
+
+/* close modal */
+function closeBgModal(){
+  bgModal.style.display = "none";
+}
+
+/* click on image to apply bg */
+bgGrid.querySelectorAll("img").forEach(img => {
+  img.onclick = () => {
+    setPlayerBg(img.src);
+    localStorage.setItem("playerBg", img.src);
+    closeBgModal();
+  }
+});
+
+/* function to set background */
+function setPlayerBg(src){
+  document.querySelector(".player").style.background =
+    `linear-gradient(rgba(2,6,23,.75),rgba(2,6,23,.75)), url(${src}) center/cover`;
+}
+
+/* load saved bg on refresh */
+const savedBg = localStorage.getItem("playerBg");
+if(savedBg){
+  setPlayerBg(savedBg);
+}
+</script>
 <script>
     function next(){
   if(songs.length === 0) return;
@@ -604,5 +860,7 @@ audio.src = URL.createObjectURL(song.file);
 audio.play();
 progress.value = 0;
 </script>
+
+  
 </body>
 </html>
