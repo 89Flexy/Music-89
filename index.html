@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Modern Music Player</title>
+
+<style>
+:root{
+  --bg:#020617;
+  --card:rgba(255,255,255,0.08);
+  --blur:blur(26px);
+
+  /* 🩵 Light Blue theme */
+  --accent:#38bdf8;          /* main blue */
+  --accent-soft:rgba(56,189,248,.35);
+  --accent-glow:rgba(125,211,252,.6);
+
+  --text:#e5e7eb;
+  --muted:#9ca3af;
+}
+
+*{
+  box-sizing:border-box;
+  font-family:Poppins,system-ui;
+}
+
+body{
+  margin:0;
+  background:
+    radial-gradient(circle at top,#0b2a3d,#020617 65%),
+    #000;
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  color:var(--text);
+}
+
+/* 🔥 PLAYER CARD */
+.player{
+  width:360px;
+  background:var(--card);
+  backdrop-filter:var(--blur);
+  border-radius:26px;
+  padding:18px;
+  position:relative;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.08),
+    0 30px 70px rgba(0,0,0,.7),
+    0 0 45px var(--accent-soft);
+}
+
+/* ✨ glowing glass edge */
+.player::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:26px;
+  padding:1px;
+  background:linear-gradient(
+    135deg,
+    transparent,
+    var(--accent),
+    transparent
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;
+  pointer-events:none;
+}
+
+/* 🎵 COVER */
+.cover{
+  height:220px;
+  border-radius:18px;
+  background:
+    radial-gradient(circle at top,#7dd3fc,#38bdf8);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:64px;
+  margin-bottom:15px;
+  box-shadow:
+    inset 0 0 30px rgba(0,0,0,.4),
+    0 0 30px var(--accent-glow);
+}
+
+/* TITLE */
+.title{text-align:center;}
+.title h3{
+  margin:4px 0;
+  font-weight:600;
+}
+.title p{
+  margin:0;
+  font-size:13px;
+  color:var(--muted);
+}
+
+/* 🎚 PROGRESS */
+.progress input{
+  width:100%;
+  margin:14px 0;
+  accent-color:var(--accent);
+}
+
+/* CONTROLS */
+.controls{
+  display:flex;
+  justify-content:center;
+  gap:22px;
+}
+
+.controls button{
+  border:none;
+  background:none;
+  color:var(--text);
+  font-size:20px;
+  cursor:pointer;
+  opacity:.85;
+}
+.controls button:hover{opacity:1;}
+
+.play{
+  width:58px;
+  height:58px;
+  border-radius:50%;
+  background:var(--accent);
+  color:#022c22;
+  font-size:22px;
+  box-shadow:
+    0 0 28px var(--accent-glow),
+    0 8px 25px rgba(0,0,0,.6);
+}
+
+/* ➕ ADD MUSIC */
+.add{
+  margin-top:16px;
+  background:linear-gradient(135deg,#38bdf8,#7dd3fc);
+  color:#022c22;
+  padding:12px;
+  border-radius:14px;
+  text-align:center;
+  font-weight:600;
+  cursor:pointer;
+  box-shadow:0 0 25px var(--accent-soft);
+}
+.add:hover{filter:brightness(1.08);}
+
+/* 📜 PLAYLIST */
+.list{
+  margin-top:14px;
+  max-height:160px;
+  overflow:auto;
+}
+
+.song{
+  padding:10px 12px;
+  background:rgba(255,255,255,.05);
+  border-radius:12px;
+  margin-bottom:8px;
+  cursor:pointer;
+  font-size:14px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.song:hover{
+  background:rgba(56,189,248,.18);
+  box-shadow:0 0 14px rgba(56,189,248,.35);
+}
+</style>
+</head>
+
+<body>
+
+<div class="player">
+<div class="cover" id="cover">🎵</div>
+<!-- IMAGE SELECT MODAL -->
+<div class="modal" id="modal">
+  <div class="modalBox">
+    <h3>Select Cover</h3>
+
+ <div class="imgGrid" id="imgGrid">
+      <!-- YAHAN TUM APNI IMAGES ADD KARO -->
+      <img src="https://i.ibb.co/x8gycKjb/20260113-180210.jpg">
+      <img src="https://i.ibb.co/wFHxcqXx/53df95e14673d3966b3e868a664e0deb.jpg">
+      <img src="https://i.ibb.co/KYfSmvJ/64dbd520e0a742e5002cee3081ba612c.jpg">
+      <img src="https://i.ibb.co/nZb9vVx/badde811ad3369d1c73171c6e7b7b578.jpg">
+      <img src="https://i.ibb.co/zTQ59nFZ/17d893a3261cae50bb5eb79627598fec.jpg">
+      <img src="https://i.ibb.co/Z6JwytBY/e5138e9e1e35ac672c0568ccc93834bd.jpg">
+    </div>
+
+    <button class="close" onclick="closeModal()">Close</button>
+  </div>
+</div>
+  <div class="title">
+    <h3 id="songName">No song selected</h3>
+    <p>Local Music Player</p>
+  </div>
+
+  <div class="progress">
+    <input type="range" id="progress" value="0">
+  </div>
+
+  <div class="controls">
+    <button onclick="prev()">⏮</button>
+    <button class="play" onclick="toggle()">▶</button>
+    <button onclick="next()">⏭</button>
+  </div>
+
+  <div class="add" onclick="file.click()">➕ Add Music</div>
+
+  <div class="list" id="list"></div>
+
+  <input type="file" id="file" hidden accept="audio/*">
+  <audio id="audio"></audio>
+</div>
+<script>
+const cover = document.getElementById("cover");
+const modal = document.getElementById("modal");
+const imgGrid = document.getElementById("imgGrid");
+
+/* open modal */
+cover.onclick = () => modal.style.display = "flex";
+function closeModal(){
+  modal.style.display = "none";
+}
+
+/* apply selected image */
+imgGrid.querySelectorAll("img").forEach(img=>{
+  img.onclick = ()=>{
+    cover.style.background = `url(${img.src}) center/cover`;
+    cover.innerHTML = ""; // remove 🎵 icon
+    closeModal();
+  };
+});
+</script>
+<style>/* 🪟 MODAL */
+.modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.6);
+  backdrop-filter:blur(6px);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:100;
+}
+
+.modalBox{
+  width:320px;
+  background:rgba(255,255,255,.08);
+  backdrop-filter:blur(25px);
+  border-radius:22px;
+  padding:16px;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.1),
+    0 0 40px rgba(56,189,248,.35);
+}
+
+.modalBox h3{
+  text-align:center;
+  margin:6px 0 12px;
+}
+
+.imgGrid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+}
+
+.imgGrid img{
+  width:100%;
+  height:80px;
+  object-fit:cover;
+  border-radius:12px;
+  cursor:pointer;
+  box-shadow:0 0 10px rgba(0,0,0,.4);
+}
+.imgGrid img:hover{
+  outline:2px solid #38bdf8;
+}
+
+.upload,.close{
+  width:100%;
+  padding:10px;
+  margin-top:10px;
+  border:none;
+  border-radius:14px;
+  font-weight:600;
+  cursor:pointer;
+}
+
+.upload{
+  background:linear-gradient(135deg,#38bdf8,#7dd3fc);
+}
+.close{
+  background:rgba(255,255,255,.1);
+  color:#fff;
+}</style>
+<script>
+const audio = document.getElementById("audio");
+const file = document.getElementById("file");
+const list = document.getElementById("list");
+const nameUI = document.getElementById("songName");
+const progress = document.getElementById("progress");
+
+let db, songs = [], index = 0;
+
+/* --- Open IndexedDB --- */
+const req = indexedDB.open("ModernMusic", 1);
+req.onupgradeneeded = e => {
+  e.target.result.createObjectStore("songs", { keyPath: "id", autoIncrement: true });
+};
+req.onsuccess = e => {
+  db = e.target.result;
+  loadSongs();
+};
+
+/* --- Add music --- */
+file.onchange = () => {
+  const f = file.files[0];
+  if (!f) return;
+
+  // Save the current cover for this song
+  let coverImg = "";
+  const bg = cover.style.backgroundImage;
+  if (bg && bg !== "none") {
+    coverImg = bg.slice(5, -2); // remove url("") part
+  }
+
+  const tx = db.transaction("songs", "readwrite");
+  const store = tx.objectStore("songs");
+  store.add({ name: f.name, file: f, cover: coverImg }).onsuccess = () => loadSongs();
+};
+
+/* --- Load songs from DB --- */
+function loadSongs() {
+  songs = [];
+  list.innerHTML = "";
+  const tx = db.transaction("songs", "readonly").objectStore("songs");
+  tx.openCursor().onsuccess = e => {
+    const cursor = e.target.result;
+    if (cursor) {
+      const song = cursor.value;
+      songs.push(song);
+
+      const d = document.createElement("div");
+      d.className = "song";
+      d.style.display = "flex";
+      d.style.alignItems = "center";
+
+      // Thumbnail
+      const thumb = document.createElement("img");
+      thumb.src = song.cover || "https://i.ibb.co/3h0V4g7/default-music.png";
+      thumb.style.width = "36px";
+      thumb.style.height = "36px";
+      thumb.style.objectFit = "cover";
+      thumb.style.borderRadius = "6px";
+      thumb.style.marginRight = "10px";
+
+      // Song name
+      const nameSpan = document.createElement("span");
+      nameSpan.innerText = song.name;
+      nameSpan.style.flex = "1";
+
+      // Trash icon
+      const trash = document.createElement("img");
+      trash.src = "https://img.icons8.com/ios-glyphs/30/ffffff/trash.png";
+      trash.style.width = "22px";
+      trash.style.height = "22px";
+      trash.style.cursor = "pointer";
+      trash.style.marginLeft = "10px";
+      trash.onclick = (event) => {
+        event.stopPropagation();
+        confirmDelete(song.id);
+      };
+
+      d.appendChild(thumb);
+      d.appendChild(nameSpan);
+      d.appendChild(trash);
+
+      // Play song on click
+      const songIndex = songs.length - 1;
+      d.onclick = () => play(songIndex);
+
+      list.appendChild(d);
+      cursor.continue();
+    }
+  };
+}
+
+/* --- Play a song --- */
+function play(i) {
+  index = i;
+  const song = songs[i];
+  if (!song || !song.file) return;
+
+  // Create a URL for the blob to play
+  const url = URL.createObjectURL(song.file);
+  audio.src = url;
+  nameUI.innerText = song.name;
+  audio.play();
+  document.querySelector(".play").innerText = "⏸";
+}
+
+/* --- Controls --- */
+function toggle() {
+  if (!audio.src) return;
+  if (audio.paused) {
+    audio.play();
+    document.querySelector(".play").innerText = "⏸";
+  } else {
+    audio.pause();
+    document.querySelector(".play").innerText = "▶";
+  }
+}
+
+function next() {
+  if (index < songs.length - 1) play(index + 1);
+}
+
+function prev() {
+  if (index > 0) play(index - 1);
+}
+
+/* --- Progress bar --- */
+audio.ontimeupdate = () => {
+  progress.value = (audio.currentTime / audio.duration) * 100 || 0;
+};
+progress.oninput = () => {
+  audio.currentTime = (progress.value / 100) * audio.duration;
+};
+
+/* --- Delete song --- */
+function deleteSong(id) {
+  const tx = db.transaction("songs", "readwrite");
+  tx.objectStore("songs").delete(id).onsuccess = () => {
+    loadSongs();
+    if (songs[index] && songs[index].id === id) {
+      audio.pause();
+      audio.src = "";
+      nameUI.innerText = "No song selected";
+      document.querySelector(".play").innerText = "▶";
+    }
+  };
+}
+
+/* --- Confirmation modal --- */
+function confirmDelete(id) {
+  const modal = document.createElement("div");
+  modal.style.position = "fixed";
+  modal.style.inset = "0";
+  modal.style.background = "rgba(0,0,0,0.5)";
+  modal.style.backdropFilter = "blur(6px)";
+  modal.style.display = "flex";
+  modal.style.justifyContent = "center";
+  modal.style.alignItems = "center";
+  modal.style.zIndex = "1000";
+
+  const box = document.createElement("div");
+  box.style.background = "rgba(255,255,255,0.08)";
+  box.style.backdropFilter = "blur(20px)";
+  box.style.padding = "20px";
+  box.style.borderRadius = "18px";
+  box.style.textAlign = "center";
+  box.style.minWidth = "260px";
+  box.style.boxShadow = "0 0 40px rgba(56,189,248,.35)";
+
+  const text = document.createElement("p");
+  text.innerText = "Do you want to delete this song?";
+  text.style.marginBottom = "16px";
+
+  const yes = document.createElement("button");
+  yes.innerText = "Yes";
+  yes.style.marginRight = "10px";
+  yes.style.padding = "8px 16px";
+  yes.style.borderRadius = "10px";
+  yes.style.border = "none";
+  yes.style.background = "#38bdf8";
+  yes.style.color = "#022c22";
+  yes.style.cursor = "pointer";
+  yes.onclick = () => {
+    deleteSong(id);
+    document.body.removeChild(modal);
+  };
+
+  const no = document.createElement("button");
+  no.innerText = "No";
+  no.style.padding = "8px 16px";
+  no.style.borderRadius = "10px";
+  no.style.border = "none";
+  no.style.background = "rgba(255,255,255,0.1)";
+  no.style.color = "#fff";
+  no.style.cursor = "pointer";
+  no.onclick = () => document.body.removeChild(modal);
+
+  box.appendChild(text);
+  box.appendChild(yes);
+  box.appendChild(no);
+  modal.appendChild(box);
+  document.body.appendChild(modal);
+}
+/* --- Delete song --- */
+function deleteSong(id) {
+  const tx = db.transaction("songs", "readwrite");
+  tx.objectStore("songs").delete(id).onsuccess = () => {
+    loadSongs();
+    if (songs[index] && songs[index].id === id) {
+      audio.pause();
+      audio.src = "";
+      nameUI.innerText = "No song selected";
+    }
+  };
+}
+</script>
+
+</body>
+</html>
