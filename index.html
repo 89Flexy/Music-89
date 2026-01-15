@@ -207,10 +207,10 @@ body{
 
   <div class="controls">
     <button onclick="prev()">⏮</button>
-    <button class="play" onclick="toggle()">▶</button>
+ <button class="play" id="playBtn" onclick="toggle()">▶</button>
     <button onclick="next()">⏭</button>
   </div>
-
+<div class="add" onclick="toggle()">▶ Play</div>
   <div class="add" onclick="file.click()">➕ Add Music</div>
 
   <div class="list" id="list"></div>
@@ -218,6 +218,29 @@ body{
   <input type="file" id="file" hidden accept="audio/*">
   <audio id="audio"></audio>
 </div>
+<script>
+    function toggle(){
+  if(!audio.src) return;
+  if(audio.paused){
+    audio.play();
+  }else{
+    audio.pause();
+  }
+}
+
+function play(i){
+  index = i;
+  const song = songs[i];
+  audio.src = URL.createObjectURL(song.file);
+  audio.play();
+  nameUI.innerText = song.name;
+
+  if(song.cover){
+    cover.style.background = `url(${song.cover}) center/cover`;
+    cover.innerHTML = "";
+  }
+}
+</script>
 <script>
 const cover = document.getElementById("cover");
 const modal = document.getElementById("modal");
@@ -233,10 +256,16 @@ function closeModal(){
 imgGrid.querySelectorAll("img").forEach(img=>{
   img.onclick = ()=>{
     cover.style.background = `url(${img.src}) center/cover`;
-    cover.innerHTML = ""; // remove 🎵 icon
+    cover.innerHTML = "";
+    localStorage.setItem("playerCover", img.src);
     closeModal();
   };
 });
+const savedCover = localStorage.getItem("playerCover");
+if(savedCover){
+  cover.style.background = `url(${savedCover}) center/cover`;
+  cover.innerHTML = "";
+}
 </script>
 <style>/* 🪟 MODAL */
 .modal{
@@ -319,7 +348,78 @@ req.onsuccess = e => {
   db = e.target.result;
   loadSongs();
 };
+const playBtn = document.getElementById("playBtn");
 
+function toggle(){
+  // agar koi song load nahi hai
+  if(!audio.src){
+    if(songs.length === 0) return;
+    play(0);
+    playBtn.innerText = "⬜";
+    return;
+  }
+
+  if(audio.paused){
+    audio.play();
+    playBtn.innerText = "⬜";
+  }else{
+    audio.pause();
+    playBtn.innerText = "▶";
+  }
+}
+/* --- Load songs from DB --- */
+function loadSongs() {
+  songs = [];
+  list.innerHTML = "";
+  const tx = db.transaction("songs", "readonly").objectStore("songs");
+  tx.openCursor().onsuccess = e => {
+    const cursor = e.target.result;
+    if (cursor) {
+      const song = cursor.value;
+      songs.push(song);
+
+      // Create playlist item
+      const d = document.createElement("div");
+      d.className = "song";
+
+      // --- Thumbnail Image ---
+      const thumb = document.createElement("img");
+      thumb.src = cover.style.backgroundImage.replace(/url\((['"])?(.*?)\1\)/gi, '$2'); 
+      thumb.style.width = "36px";
+      thumb.style.height = "36px";
+      thumb.style.objectFit = "cover";
+      thumb.style.borderRadius = "6px";
+      thumb.style.marginRight = "10px";
+
+      // --- Song Name ---
+      const nameSpan = document.createElement("span");
+      nameSpan.innerText = song.name;
+      nameSpan.style.flex = "1";
+
+      // --- Trash Icon ---
+      const trash = document.createElement("span");
+      trash.innerHTML = "";  // You can replace with font-awesome trash if you want
+      trash.style.cursor = "pointer";
+      trash.style.marginLeft = "10px";
+      trash.onclick = (event) => {
+        event.stopPropagation(); // Prevent triggering play
+        deleteSong(song.id);
+      };
+
+      // Combine all elements
+      d.appendChild(thumb);
+      d.appendChild(nameSpan);
+      d.appendChild(trash);
+
+      // Play song when clicked (excluding trash)
+      const songIndex = songs.length - 1;
+      d.onclick = () => play(songIndex);
+
+      list.appendChild(d);
+      cursor.continue();
+    }
+  };
+}
 /* --- Add music --- */
 file.onchange = () => {
   const f = file.files[0];
@@ -329,6 +429,7 @@ file.onchange = () => {
   let coverImg = "";
   const bg = cover.style.backgroundImage;
   if (bg && bg !== "none") {
+    // extract URL from backgroundImage
     coverImg = bg.slice(5, -2); // remove url("") part
   }
 
@@ -336,7 +437,6 @@ file.onchange = () => {
   const store = tx.objectStore("songs");
   store.add({ name: f.name, file: f, cover: coverImg }).onsuccess = () => loadSongs();
 };
-
 /* --- Load songs from DB --- */
 function loadSongs() {
   songs = [];
@@ -353,29 +453,29 @@ function loadSongs() {
       d.style.display = "flex";
       d.style.alignItems = "center";
 
-      // Thumbnail
+      // --- Thumbnail Image ---
       const thumb = document.createElement("img");
-      thumb.src = song.cover || "https://i.ibb.co/3h0V4g7/default-music.png";
+      thumb.src = song.cover || "https://i.ibb.co/3h0V4g7/default-music.png"; // fallback
       thumb.style.width = "36px";
       thumb.style.height = "36px";
       thumb.style.objectFit = "cover";
       thumb.style.borderRadius = "6px";
       thumb.style.marginRight = "10px";
 
-      // Song name
+      // --- Song Name ---
       const nameSpan = document.createElement("span");
       nameSpan.innerText = song.name;
       nameSpan.style.flex = "1";
 
-      // Trash icon
+      // --- Trash Icon ---
       const trash = document.createElement("img");
-      trash.src = "https://img.icons8.com/ios-glyphs/30/ffffff/trash.png";
+      trash.src = "https://img.icons8.com/ios-glyphs/30/ffffff/trash.png"; // icons8 trash
       trash.style.width = "22px";
       trash.style.height = "22px";
       trash.style.cursor = "pointer";
       trash.style.marginLeft = "10px";
       trash.onclick = (event) => {
-        event.stopPropagation();
+        event.stopPropagation(); // prevent play
         confirmDelete(song.id);
       };
 
@@ -383,7 +483,7 @@ function loadSongs() {
       d.appendChild(nameSpan);
       d.appendChild(trash);
 
-      // Play song on click
+      // Play song when clicked (excluding trash)
       const songIndex = songs.length - 1;
       d.onclick = () => play(songIndex);
 
@@ -393,64 +493,9 @@ function loadSongs() {
   };
 }
 
-/* --- Play a song --- */
-function play(i) {
-  index = i;
-  const song = songs[i];
-  if (!song || !song.file) return;
-
-  // Create a URL for the blob to play
-  const url = URL.createObjectURL(song.file);
-  audio.src = url;
-  nameUI.innerText = song.name;
-  audio.play();
-  document.querySelector(".play").innerText = "⏸";
-}
-
-/* --- Controls --- */
-function toggle() {
-  if (!audio.src) return;
-  if (audio.paused) {
-    audio.play();
-    document.querySelector(".play").innerText = "⏸";
-  } else {
-    audio.pause();
-    document.querySelector(".play").innerText = "▶";
-  }
-}
-
-function next() {
-  if (index < songs.length - 1) play(index + 1);
-}
-
-function prev() {
-  if (index > 0) play(index - 1);
-}
-
-/* --- Progress bar --- */
-audio.ontimeupdate = () => {
-  progress.value = (audio.currentTime / audio.duration) * 100 || 0;
-};
-progress.oninput = () => {
-  audio.currentTime = (progress.value / 100) * audio.duration;
-};
-
-/* --- Delete song --- */
-function deleteSong(id) {
-  const tx = db.transaction("songs", "readwrite");
-  tx.objectStore("songs").delete(id).onsuccess = () => {
-    loadSongs();
-    if (songs[index] && songs[index].id === id) {
-      audio.pause();
-      audio.src = "";
-      nameUI.innerText = "No song selected";
-      document.querySelector(".play").innerText = "▶";
-    }
-  };
-}
-
-/* --- Confirmation modal --- */
+/* --- Confirmation Modal --- */
 function confirmDelete(id) {
+  // create modal dynamically
   const modal = document.createElement("div");
   modal.style.position = "fixed";
   modal.style.inset = "0";
@@ -504,6 +549,7 @@ function confirmDelete(id) {
   modal.appendChild(box);
   document.body.appendChild(modal);
 }
+
 /* --- Delete song --- */
 function deleteSong(id) {
   const tx = db.transaction("songs", "readwrite");
