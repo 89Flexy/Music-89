@@ -211,7 +211,7 @@ body{
     <button onclick="next()">⏭</button>
   </div>
 <div class="add" onclick="toggle()">▶ Play</div>
-  <div class="add" onclick="file.click()"> ✚ Add Music</div>
+  <div class="add" onclick="file.click()">➕ Add Music</div>
 
   <div class="list" id="list"></div>
 
@@ -219,6 +219,29 @@ body{
   <audio id="audio"></audio>
 </div>
 <script>
+    function next(){
+  if(songs.length === 0) return;
+
+  index++;
+  if(index >= songs.length){
+    index = 0; // last ke baad first
+  }
+
+  play(index);
+}
+
+function prev(){
+  if(songs.length === 0) return;
+
+  index--;
+  if(index < 0){
+    index = songs.length - 1; // first ke pehle last
+  }
+
+  play(index);
+}audio.onended = () => {
+  next();
+};
     function toggle(){
   if(!audio.src) return;
   if(audio.paused){
@@ -563,6 +586,23 @@ function deleteSong(id) {
   };
 }
 </script>
+<script>
+    /* 🎚 SYNC PROGRESS BAR */
+audio.addEventListener("loadedmetadata", () => {
+  progress.max = Math.floor(audio.duration);
+});
 
+audio.addEventListener("timeupdate", () => {
+  progress.value = Math.floor(audio.currentTime);
+});
+
+progress.addEventListener("input", () => {
+  audio.currentTime = progress.value;
+});
+progress.value = 0;
+audio.src = URL.createObjectURL(song.file);
+audio.play();
+progress.value = 0;
+</script>
 </body>
 </html>
