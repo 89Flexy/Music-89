@@ -199,6 +199,29 @@ body {
     background-position: center;
   }
 </style>
+<!-- Firebase -->
+<script type="module">
+  // Import Firebase modules
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-app.js";
+  import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-storage.js";
+  import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBE2KLUA3QKLBO6AKyMPufF5SnWGYMmFjI",
+    authDomain: "music-89.firebaseapp.com",
+    projectId: "music-89",
+    storageBucket: "music-89.firebasestorage.app",
+    messagingSenderId: "81340177261",
+    appId: "1:81340177261:web:ee7aa823410b641d03d864"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const storage = getStorage(app);
+  const db = getFirestore(app);
+
+  window.firebaseStorage = storage;
+  window.firebaseDB = db;
+</script>
 </head>
 <style>
     /* 🔝 TOP BAR */
@@ -546,7 +569,7 @@ function prev(){
 function play(i){
   index = i;
   const song = songs[i];
-  audio.src = URL.createObjectURL(song.file);
+  audio.src = song.url; // Firebase URL
   audio.play();
   nameUI.innerText = song.name;
 
@@ -698,62 +721,85 @@ function toggle(){
   }
 }
 /* --- Load songs from DB --- */
-function loadSongs() {
+async function loadSongs() {
   songs = [];
   list.innerHTML = "";
-  const tx = db.transaction("songs", "readonly").objectStore("songs");
-  tx.openCursor().onsuccess = e => {
-    const cursor = e.target.result;
-    if (cursor) {
-      const song = cursor.value;
-      songs.push(song);
 
-      // Create playlist item
-      const d = document.createElement("div");
-      d.className = "song";
+  const querySnapshot = await getDocs(collection(firebaseDB, 'songs'));
+  querySnapshot.forEach((docSnap) => {
+    const song = docSnap.data();
+    song.id = docSnap.id; // Firestore doc ID
+    songs.push(song);
 
-      // --- Thumbnail Image ---
-      const thumb = document.createElement("img");
-      thumb.src = cover.style.backgroundImage.replace(/url\((['"])?(.*?)\1\)/gi, '$2'); 
-      thumb.style.width = "36px";
-      thumb.style.height = "36px";
-      thumb.style.objectFit = "cover";
-      thumb.style.borderRadius = "6px";
-      thumb.style.marginRight = "10px";
+    const d = document.createElement("div");
+    d.className = "song";
+    d.style.display = "flex";
+    d.style.alignItems = "center";
 
-      // --- Song Name ---
-      const nameSpan = document.createElement("span");
-      nameSpan.innerText = song.name;
-      nameSpan.style.flex = "1";
+    const thumb = document.createElement("img");
+    thumb.src = song.cover || "https://i.ibb.co/3h0V4g7/default-music.png";
+    thumb.style.width = "36px";
+    thumb.style.height = "36px";
+    thumb.style.objectFit = "cover";
+    thumb.style.borderRadius = "6px";
+    thumb.style.marginRight = "10px";
 
-      // --- Trash Icon ---
-      const trash = document.createElement("span");
-      trash.innerHTML = "";  // You can replace with font-awesome trash if you want
-      trash.style.cursor = "pointer";
-      trash.style.marginLeft = "10px";
-      trash.onclick = (event) => {
-        event.stopPropagation(); // Prevent triggering play
-        deleteSong(song.id);
-      };
+    const nameSpan = document.createElement("span");
+    nameSpan.innerText = song.name;
+    nameSpan.style.flex = "1";
 
-      // Combine all elements
-      d.appendChild(thumb);
-      d.appendChild(nameSpan);
-      d.appendChild(trash);
+    const trash = document.createElement("img");
+    trash.src = "https://img.icons8.com/ios-glyphs/30/ffffff/trash.png";
+    trash.style.width = "22px";
+    trash.style.height = "22px";
+    trash.style.cursor = "pointer";
+    trash.style.marginLeft = "10px";
+    trash.onclick = (event) => {
+      event.stopPropagation();
+      confirmDelete(song.id);
+    };
 
-      // Play song when clicked (excluding trash)
-      const songIndex = songs.length - 1;
-      d.onclick = () => play(songIndex);
+    d.appendChild(thumb);
+    d.appendChild(nameSpan);
+    d.appendChild(trash);
 
-      list.appendChild(d);
-      cursor.continue();
-    }
-  };
+    const songIndex = songs.length - 1;
+    d.onclick = () => play(songIndex);
+
+    list.appendChild(d);
+  });
 }
 /* --- Add music --- */
-file.onchange = () => {
+file.onchange = async () => {
   const f = file.files[0];
   if (!f) return;
+
+  // Generate unique filename to avoid conflict
+  const fileRef = ref(firebaseStorage, 'songs/' + Date.now() + '-' + f.name);
+
+  // Upload file
+  await uploadBytes(fileRef, f);
+
+  // Get download URL
+  const fileURL = await getDownloadURL(fileRef);
+
+  // Optional: upload current cover too
+  let coverURL = "";
+  const bg = cover.style.backgroundImage;
+  if (bg && bg !== "none") {
+    coverURL = bg.slice(5, -2); // remove url("") part
+  }
+
+  // Add metadata to Firestore
+  await addDoc(collection(firebaseDB, 'songs'), {
+    name: f.name,
+    url: fileURL,
+    cover: coverURL,
+    createdAt: Date.now()
+  });
+
+  loadSongs(); // reload playlist
+};
 
   // Save the current cover for this song
   let coverImg = "";
@@ -881,16 +927,16 @@ function confirmDelete(id) {
 }
 
 /* --- Delete song --- */
-function deleteSong(id) {
-  const tx = db.transaction("songs", "readwrite");
-  tx.objectStore("songs").delete(id).onsuccess = () => {
-    loadSongs();
-    if (songs[index] && songs[index].id === id) {
-      audio.pause();
-      audio.src = "";
-      nameUI.innerText = "No song selected";
-    }
-  };
+async function deleteSong(id) {
+  // Delete Firestore document
+  await deleteDoc(doc(firebaseDB, 'songs', id));
+  loadSongs();
+
+  if (songs[index] && songs[index].id === id) {
+    audio.pause();
+    audio.src = "";
+    nameUI.innerText = "No song selected";
+  }
 }
 </script>
 <script>
