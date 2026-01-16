@@ -200,6 +200,33 @@ body {
     background-position: center;
   }
 </style>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "REAL_KEY",
+  authDomain: "music-89.firebaseapp.com",
+  projectId: "music-89"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
+
+window.login = () => {
+  signInWithPopup(auth, provider)
+    .catch(err => alert(err.message));
+};
+
+onAuthStateChanged(auth, (user)=>{
+  if(user){
+    document.getElementById("login-screen").style.display="none";
+    document.getElementById("user-photo").src = user.photoURL;
+    document.getElementById("user-photo").style.display="block";
+  }
+});
+</script>
 </head>
 <style>
     /* 🔝 TOP BAR */
@@ -369,35 +396,7 @@ body {
 </style>
     <div class="top-text"> Music 89 
     </div>
-    <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-/* 🔥 PASTE YOUR FIREBASE CONFIG HERE */
-const firebaseConfig = {
-  apiKey: "AIzaSy....",
-  authDomain: "music-89.firebaseapp.com",
-  projectId: "music-89"
-};
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const provider = new GoogleAuthProvider();
-const db = getFirestore(app);
-
-/* GLOBAL */
-window.auth = auth;
-window.db = db;
-window.provider = provider;
-window.signInWithPopup = signInWithPopup;
-window.onAuthStateChanged = onAuthStateChanged;
-window.signOut = signOut;
-window.collection = collection;
-window.addDoc = addDoc;
-window.getDocs = getDocs;
-window.query = query;
-window.orderBy = orderBy;
-</script>
+  
 <body>
 
     <div id="login-screen">
@@ -730,7 +729,6 @@ if(savedCover){
   color:#fff;
 }</style>
 <script>
-    <script>
 /* =========================
    FIREBASE SONG FUNCTIONS
    ========================= */
@@ -770,7 +768,6 @@ async function loadSongs(){
     renderSong(doc.data()); // 👈 tera existing function
   });
 }
-</script>
 </script>
 <script>
 const audio = document.getElementById("audio");
@@ -1022,22 +1019,7 @@ audio.src = URL.createObjectURL(song.file);
 audio.play();
 progress.value = 0;
 </script>
-<script>
-function login(){
-  signInWithPopup(auth, provider);
-}
 
-onAuthStateChanged(auth, async (user)=>{
-  if(user){
-    document.getElementById("login-screen").style.display="none";
-    document.getElementById("user-photo").src = user.photoURL;
-    document.getElementById("user-photo").style.display="block";
-    loadSongs();
-  }else{
-    document.getElementById("login-screen").style.display="flex";
-  }
-});
-</script>
   
 </body>
 </html>
