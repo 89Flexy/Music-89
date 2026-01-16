@@ -684,13 +684,84 @@ onAuthStateChanged(auth, (user)=>{
     <button class="close" onclick="closeBgModal()">Close</button>
   </div>
 </div>
-<!-- 🔝 TOP BAR -->
-<div class="topbar">
-  <!-- Logo -->
-    <img src="https://drive.google.com/thumbnail?id=1pVLvz0c2tYbX4ZVVPAy1ghL0DHStvf7e&sz=w2000"
-    class="logo"
-    alt="logo"
-  >
+<style>
+    .logo-wrap{
+  cursor:pointer;
+  z-index:50;
+}
+
+.logo{
+  width:38px;
+  height:38px;
+  border-radius:50%;
+}
+
+/* MINI POPUP */
+.mini-menu{
+  position:fixed;
+  top:70px;
+  left:15px;
+  width:160px;
+  padding:14px;
+  background:rgba(255,255,255,0.08);
+  backdrop-filter:blur(18px);
+  border:1px solid rgba(255,255,255,0.15);
+  border-radius:14px;
+  box-shadow:0 0 25px rgba(0,255,150,0.25);
+  display:none;
+  animation:fadeUp .25s ease;
+  z-index:100;
+}
+
+@keyframes fadeUp{
+  from{opacity:0; transform:translateY(10px);}
+  to{opacity:1; transform:translateY(0);}
+}
+
+/* LOGOUT TEXT */
+.logout-btn{
+  color:#ff4d4d;
+  font-weight:600;
+  text-align:center;
+  padding:10px;
+  border-radius:10px;
+}
+
+.logout-btn:hover{
+  background:rgba(255,77,77,0.15);
+}
+    </style>
+    <script>
+function toggleMenu(){
+  const menu = document.getElementById("miniMenu");
+  menu.style.display = 
+    menu.style.display === "block" ? "none" : "block";
+}
+
+/* CLICK OUTSIDE CLOSE */
+document.addEventListener("click", (e)=>{
+  if(!e.target.closest(".logo-wrap")){
+    document.getElementById("miniMenu").style.display="none";
+  }
+});
+
+/* FIREBASE GOOGLE LOGOUT */
+function logout(){
+  firebase.auth().signOut().then(()=>{
+    location.reload();
+  });
+}
+    </script>
+<!-- TOP LEFT LOGO -->
+<div class="logo-wrap" onclick="toggleMenu()">
+  <img src="https://drive.google.com/thumbnail?id=1pVLvz0c2tYbX4ZVVPAy1ghL0DHStvf7e&sz=w2000" alt="logo" class="logo">
+</div>
+
+<!-- MINI MENU -->
+<div class="mini-menu" id="miniMenu">
+  <p class="logout-btn" onclick="logout()">Logout</p>
+</div>
+
 
   <!-- Settings -->
 <span class="settings" onclick="openBgModal()">⚙</span>
