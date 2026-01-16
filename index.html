@@ -220,10 +220,15 @@ window.login = () => {
 };
 
 onAuthStateChanged(auth, (user)=>{
+  // hide black screen once auth is ready
+  document.getElementById("boot-screen")?.classList.add("hide");
+
   if(user){
     document.getElementById("login-screen").style.display="none";
     document.getElementById("user-photo").src = user.photoURL;
     document.getElementById("user-photo").style.display="block";
+  }else{
+    document.getElementById("login-screen").style.display="flex";
   }
 });
 </script>
@@ -398,7 +403,7 @@ onAuthStateChanged(auth, (user)=>{
     </div>
   
 <body>
-
+<div id="boot-screen"></div>
 <div id="login-screen">
   <div class="login-card">
     <div class="logo-circle">🎧</div>
@@ -415,6 +420,19 @@ onAuthStateChanged(auth, (user)=>{
   </div>
 </div>
 <style>
+    /* 🖤 BOOT / SPLASH SCREEN */
+#boot-screen{
+  position:fixed;
+  inset:0;
+  background:#000;
+  z-index:10000;
+  transition:opacity .35s ease, visibility .35s ease;
+}
+
+#boot-screen.hide{
+  opacity:0;
+  visibility:hidden;
+}
 #user-photo{
   position:fixed;
 /* 🔐 LOGIN SCREEN */
