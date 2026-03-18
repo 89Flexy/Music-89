@@ -521,10 +521,7 @@ function prev(){
     index = songs.length - 1; // first ke pehle last
   }
 
-  play(index);
-}audio.onended = () => {
-  next();
-};
+  audio.onended = next;
     function toggle(){
   if(!audio.src) return;
   if(audio.paused){
